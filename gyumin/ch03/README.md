@@ -164,3 +164,74 @@ fun readHexDigit() = when(val n = readLine()!!.toInt()) {
     else -> '?'
 }
 ```
+
+
+## 3.4 루프
+
+### 3.4.4 내포된 루프와 레이블
+
+* 코틀린에서는 자바의 임의 레이블과 비슷한 문법을 제공합니다.
+
+```Kotlin
+fun indexOf(subArray: IntArray, array: IntArray): Int{
+  outerLoop@ for (i in array.indices){
+    for(j in subArray.indices){
+      if(subarray[j] !=  array[i+j]) continue@outerLoop
+    }
+    return i
+  return -1
+}
+```
+
+* 코틀린은 어느 문장 앞에든 레이블을 붙일 수 있지만 break와 continue에는 구체적으로 루프 앞에 붙은 레이블만 사용할 수 있습니다.
+
+### 3.4.5 꼬리 재귀 함수
+
+* 코틀린은 꼬리 재귀(tail recursive) 함수에 대한 최적화 컴파일을 제공합니다.
+
+```Kotlin
+tailrec fun binIndexOf(
+  x: Int,
+  array: IntArray,
+  from: Int=0,
+  to: Int = array.size
+){
+  if(from==to) return -1
+  val midIndex = (from+to-1)
+  val mid = array[midIndex]
+  return when{
+    mid < x -> binIndexOf(x, array, midIndex + 1, to)
+    mid > x -> binIndexOf(x, array, from, midIndex)
+    else -> midIndex
+  }
+}
+```
+
+* 비재귀와 비교해서 재귀는 성능 차원에서 약간의 부가 비용과 스택 오버플로 발생할 가능성이 있습니다.
+* 코틀린에서는 tailrec을 통해 재귀 함수를 비재귀적인 코드로 자동으로 변환해줍니다. 이를 통해 재귀 함수의 간결함과 비재귀 루프의 성능만을 취할 수 있습니다.
+
+```Kotlin
+tailrec fun binIndexOf(
+  x: Int,
+  array: IntArray,
+  from: Int=0,
+  to: Int = array.size
+){
+  var fromIndex = from
+  var toIndex = to
+  
+  while(true){
+    if(fromIndex==toIndex) return -1
+    val midIndex = (fromIndex+toIndex-1)
+    val mid = array[midIndex]
+    
+    when{
+      mid < x -> fromIndex = midIndex+1
+      mid > x -> toIndex = midIndex
+      else -> return midIndex
+    }
+  }
+}
+```
+
+* 재귀함수에서 비재귀함수로 변환하기 위해서는 재귀 호출 다음에 아무 동작도 수행하지 말아야합니다. 즉, 재귀 호출과 함께 추가적인 연산이 있으면 안됩니다.
